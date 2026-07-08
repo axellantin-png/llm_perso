@@ -1,24 +1,51 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
 import requests
+from fastapi.responses import FileResponse
+from pathlib import Path
+
+from .config import MODEL, OLLAMA_URL
 
 
-def ask_llm(message):
+app = FastAPI(
+    title="Mon LLM local",
+    description="API personnelle utilisant Ollama",
+    version="0.1"
+)
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+@app.get("/")
+def home():
+    return FileResponse(
+        Path("app/static/index.html")
+    )
+
+
+@app.post("/chat")
+def chat(request: ChatRequest):
+
     response = requests.post(
-        "http://localhost:11434/api/chat",
+        OLLAMA_URL,
         json={
-            "model": "mistral:latest",
+            "model": MODEL,
             "messages": [
                 {
                     "role": "user",
-                    "content": message
+                    "content": request.message
                 }
             ],
             "stream": False
         }
     )
 
-    return response.json()["message"]["content"]
+    response.raise_for_status()
 
+    result = response.json()
 
-if __name__ == "__main__":
-    answer = ask_llm("Bonjour, qui es-tu ?")
-    print(answer)
+    return {
+        "response": result["message"]["content"]
+    }

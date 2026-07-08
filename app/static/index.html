@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mon LLM local</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+        }
+
+        #answer {
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Mon LLM local</h1>
+
+<textarea id="message"
+placeholder="Pose ta question..."></textarea>
+
+<button onclick="send()">
+Envoyer
+</button>
+
+<div id="answer"></div>
+
+
+<script>
+
+async function send(){
+
+    let message =
+        document.getElementById("message").value;
+
+    let response =
+        await fetch("/chat", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                message:message
+            })
+        });
+
+    let data = await response.json();
+
+    document.getElementById("answer").innerText =
+        data.response;
+}
+
+</script>
+
+</body>
+</html>
