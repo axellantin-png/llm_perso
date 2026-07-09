@@ -42,6 +42,12 @@ async function send(){
     let message =
         document.getElementById("message").value;
 
+    let answer =
+        document.getElementById("answer");
+
+    answer.innerText = "";
+
+
     let response =
         await fetch("/chat", {
             method:"POST",
@@ -53,10 +59,28 @@ async function send(){
             })
         });
 
-    let data = await response.json();
 
-    document.getElementById("answer").innerText =
-        data.response;
+    const reader =
+        response.body.getReader();
+
+
+    const decoder =
+        new TextDecoder();
+
+
+    while(true){
+
+        const {done, value} =
+            await reader.read();
+
+
+        if(done)
+            break;
+
+
+        answer.innerText +=
+            decoder.decode(value);
+    }
 }
 
 </script>
