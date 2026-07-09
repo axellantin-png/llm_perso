@@ -9,38 +9,45 @@ from app.llm.client import stream_chat
 class ChatService:
 
 
-    def __init__(self, llm):
-
+    def __init__( self,llm,conversation_manager):
         self.llm = llm
+        self.conversation_manager = conversation_manager
 
-    def stream_response(self, message):
+    def stream_response(self,conversation_id,message):
 
-        add_message(
+        conversation = (
+            self.conversation_manager.get(
+                conversation_id
+            )
+        )
+
+
+        conversation.add_message(
             "user",
             message
         )
 
-        messages = get_history()
+
+        messages = [
+            {
+                "role": m.role,
+                "content": m.content
+            }
+            for m in conversation.messages
+        ]
+
 
         full_response = ""
 
-        generator = self.llm.stream_chat(messages)
 
-        while True:
+        for token in self.llm.stream_chat(messages):
 
-            try:
+            full_response += token
 
-                token = next(generator)
+            yield token
 
-                full_response += token
 
-                yield token
-
-            except StopIteration:
-
-                break
-
-        add_message(
+        conversation.add_message(
             "assistant",
             full_response
         )

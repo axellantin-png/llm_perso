@@ -1,11 +1,7 @@
 from app.llm.prompts import SYSTEM_PROMPT
+from app.models.conversation import Conversation
 
-conversation = [
-    {
-        "role": "system",
-        "content": SYSTEM_PROMPT
-    }
-]
+conversation = Conversation()
 
 
 def add_message(role, content):

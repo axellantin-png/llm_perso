@@ -13,12 +13,25 @@ class ChatRequest(BaseModel):
     message: str
 
 
-@router.post("/chat")
-def chat(request: ChatRequest):
+@router.post("/chat/{conversation_id}")
+def chat(
+    conversation_id: str,
+    request: ChatRequest
+):
 
     return StreamingResponse(
         service.stream_response(
+            conversation_id,
             request.message
         ),
         media_type="text/plain"
     )
+
+@router.post("/conversation")
+def create_conversation():
+
+    conversation = manager.create()
+
+    return {
+        "id": conversation.id
+    }
