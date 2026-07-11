@@ -24,3 +24,7 @@ class ConversationRepository(ABC):
         conversation_id: str
     ):
         pass
+
+    @abstractmethod
+    def save(self, conversation):
+        pass

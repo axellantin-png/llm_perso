@@ -4,13 +4,18 @@ from pydantic import BaseModel
 
 from app.services.chat_service import ChatService
 from app.repositories.memory_repository import MemoryRepository
+from app.repositories.sqlite_repository import SQLiteRepository
 from app.llm.client import OllamaClient
+
+from main import database
+
 
 
 router = APIRouter()
 
 
-repository = MemoryRepository()
+# repository = MemoryRepository()
+repository = SQLiteRepository(database)
 
 service = ChatService(
     OllamaClient(),

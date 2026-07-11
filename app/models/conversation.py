@@ -18,6 +18,18 @@ class Conversation:
     title: str = "Nouvelle conversation"
 
 
+    @classmethod
+    def from_id(cls, conversation_id: str, title: str = "Conversation existante"):
+        """
+        Crée une instance de Conversation avec un ID spécifique 
+        et une liste de messages vide.
+        """
+        return cls(
+            id=conversation_id,
+            title=title
+        )
+
+
     def add_message(
         self,
         role,
