@@ -3,22 +3,20 @@ from app.memory.memory import (
     get_history
 )
 
-from app.llm.client import stream_chat
+from app.memory.memory import get_history
 
 
 class ChatService:
 
 
-    def __init__( self,llm,conversation_manager):
+    def __init__( self,llm,repository):
         self.llm = llm
-        self.conversation_manager = conversation_manager
+        self.repository = repository
 
     def stream_response(self,conversation_id,message):
 
-        conversation = (
-            self.conversation_manager.get(
-                conversation_id
-            )
+        conversation = self.repository.get(
+            conversation_id
         )
 
 
