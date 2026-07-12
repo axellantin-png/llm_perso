@@ -5,15 +5,9 @@ from app.api.routes import router
 
 from app.api.routes import router
 from app.api.frontend import router as frontend_router
-from app.memory.database import Database
-
 
 
 app = FastAPI()
-
-database = Database()
-
-database.initialize()
 
 app.mount(
     "/static",

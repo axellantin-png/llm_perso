@@ -6,10 +6,12 @@ from app.services.chat_service import ChatService
 from app.repositories.memory_repository import MemoryRepository
 from app.repositories.sqlite_repository import SQLiteRepository
 from app.llm.client import OllamaClient
+from app.memory.database import Database
 
-from main import database
 
+database = Database()
 
+database.initialize()
 
 router = APIRouter()
 

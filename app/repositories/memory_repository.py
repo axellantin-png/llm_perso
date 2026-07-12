@@ -14,7 +14,7 @@ class MemoryRepository(ConversationRepository):
 
     def create(self):
 
-        conversation = Conversation()
+        conversation = Conversation.new()
 
         self.conversations[
             conversation.id
@@ -49,3 +49,6 @@ class MemoryRepository(ConversationRepository):
             del self.conversations[
                 conversation_id
             ]
+
+    def save(self, conversation) : 
+        print(conversation)

@@ -12,7 +12,8 @@ class SQLiteRepository(
 
     def create(self):
 
-        conversation = Conversation()
+        conversation = Conversation.new()
+
 
         connection = self.database.get_connection()
 
@@ -61,10 +62,8 @@ class SQLiteRepository(
         if conversation_row is None:
             raise ValueError(
         f"Conversation {conversation_id} not found")
-
-        conversation = Conversation()
-
-        conversation.ConversationFromHistory( id=conversation_row["id"],title=conversation_row["title"])
+        
+        conversation = Conversation.from_database(id=conversation_row["id"],title=conversation_row["title"])
 
         cursor.execute(
             """
@@ -94,3 +93,60 @@ class SQLiteRepository(
 
         return conversation
     
+    def delete(self, conversation_id: str):
+        connection = self.database.get_connection()
+        cursor = connection.cursor()
+
+        # Si tes clés étrangères ne sont pas configurées en ON DELETE CASCADE,
+        # il faut supprimer manuellement les messages liés d'abord.
+        cursor.execute(
+            "DELETE FROM messages WHERE conversation_id = ?",
+            (conversation_id,)
+        )
+        
+        cursor.execute(
+            "DELETE FROM conversations WHERE id = ?",
+            (conversation_id,)
+        )
+
+        connection.commit()
+        connection.close()
+
+    def save(self, conversation: Conversation):
+        connection = self.database.get_connection()
+        cursor = connection.cursor()
+
+        # 1. Mise à jour des métadonnées de la conversation (comme le titre)
+        cursor.execute(
+            """
+            UPDATE conversations
+            SET title = ?
+            WHERE id = ?
+            """,
+            (conversation.title, conversation.id)
+        )
+
+        # 2. Synchronisation des messages
+        # Pour éviter les doublons ou gérer les ajouts proprement, la méthode 
+        # la plus robuste consiste à vider les messages existants de cette 
+        # conversation puis à réinsérer la liste actuelle.
+        cursor.execute(
+            "DELETE FROM messages WHERE conversation_id = ?",
+            (conversation.id,)
+        )
+
+        for message in conversation.messages:
+            cursor.execute(
+                """
+                INSERT INTO messages (conversation_id, role, content)
+                VALUES (?, ?, ?)
+                """,
+                (conversation.id, message.role, message.content)
+            )
+
+        connection.commit()
+        connection.close()
+    
+    
+
+
