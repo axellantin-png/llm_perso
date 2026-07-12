@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from app.services.chat_service import ChatService
 from app.repositories.memory_repository import MemoryRepository
 from app.repositories.sqlite_repository import SQLiteRepository
-from app.llm.client import OllamaClient
-from app.memory.database import Database
+from app.llm.ollama_client import OllamaClient
+from app.database.database import Database
 
 
 database = Database()

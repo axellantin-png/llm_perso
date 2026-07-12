@@ -1,9 +1,3 @@
-from app.memory.memory import (
-    add_message,
-    get_history
-)
-
-from app.memory.memory import get_history
 from app.services.conversation_service import ConversationService
 
 
