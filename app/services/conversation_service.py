@@ -51,3 +51,9 @@ class ConversationService:
         self.repository.save(
             conversation
         )
+
+    def delete(self, conversation_id):
+
+        self.repository.delete(
+            conversation_id
+        )

@@ -111,3 +111,16 @@ def get_conversation(
     return conversation_service.get(
         conversation_id
     )
+
+@router.delete("/conversation/{conversation_id}")
+def delete_conversation(
+    conversation_id: str
+):
+
+    conversation_service.delete(
+        conversation_id
+    )
+
+    return {
+        "status":"deleted"
+    }
