@@ -146,6 +146,55 @@ class SQLiteRepository(
 
         connection.commit()
         connection.close()
+
+
+    def list(self):
+
+        connection = self.database.get_connection()
+
+        cursor = connection.cursor()
+
+        cursor.execute(
+            """
+            SELECT id, title
+            FROM conversations
+            ORDER BY created_at DESC
+            """
+        )
+
+        rows = cursor.fetchall()
+
+        connection.close()
+
+        return [
+            {
+                "id": row["id"],
+                "title": row["title"]
+            }
+            for row in rows
+    ]
+        
+    def rename(self, conversation_id, title):
+
+        connection = self.database.get_connection()
+
+        cursor = connection.cursor()
+
+        cursor.execute(
+            """
+            UPDATE conversations
+            SET title = ?
+            WHERE id = ?
+            """,
+            (
+                title,
+                conversation_id
+            )
+        )
+
+        connection.commit()
+
+        connection.close()
     
     
 

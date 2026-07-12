@@ -46,3 +46,6 @@ class Conversation:
                 content
             )
         )
+
+    def rename(self, title) : 
+        self.title = title

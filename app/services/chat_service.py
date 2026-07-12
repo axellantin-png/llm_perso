@@ -4,10 +4,10 @@ from app.services.conversation_service import ConversationService
 class ChatService:
 
 
-    def __init__( self,llm,repository):
+    def __init__( self,llm,repository, conversationService) :
         self.llm = llm
         self.repository = repository
-        self.conversationService = ConversationService(repository)
+        self.conversationService = conversationService
 
 
     def stream_response_origin(self,conversation_id,message):
