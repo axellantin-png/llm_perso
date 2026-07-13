@@ -12,6 +12,7 @@ from app.llm.ollama_client import OllamaClient
 from app.database.database import Database
 from app.services.conversation_service import ConversationService
 from app.api.schemas import ConversationResponse
+from app.tokenizers.simple_tokenizer import SimpleTokenizer
 
 ####################################################################################################################################
 # pseudo classes 
@@ -32,6 +33,8 @@ database.initialize()
 
 router = APIRouter()
 
+tokenizer = SimpleTokenizer()
+
 
 # repository = MemoryRepository()
 repository = SQLiteRepository(database)
@@ -43,7 +46,8 @@ conversation_service = ConversationService(
 service = ChatService(
     OllamaClient(),
     repository,
-    conversation_service
+    conversation_service,
+    tokenizer
 )
 
 

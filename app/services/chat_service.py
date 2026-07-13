@@ -1,13 +1,17 @@
-from app.services.conversation_service import ConversationService
+from app.llm.prompts.system import SYSTEM_PROMPT
+from app.monitoring.generation_metrics import GenerationMetrics
+import time 
+from datetime import datetime
 
 
 class ChatService:
 
 
-    def __init__( self,llm,repository, conversationService) :
+    def __init__( self,llm,repository, conversationService, tokenizer) :
         self.llm = llm
         self.repository = repository
         self.conversationService = conversationService
+        self.tokenizer = tokenizer
 
 
     def stream_response_origin(self,conversation_id,message):
@@ -55,11 +59,91 @@ class ChatService:
 
         messages = [
             {
-                "role": m.role,
-                "content": m.content
+                "role": "system",
+                "content": SYSTEM_PROMPT
             }
-            for m in conversation.messages
         ]
+
+
+        messages.extend(
+            [
+                {
+                    "role": m.role,
+                    "content": m.content
+                }
+                for m in conversation.messages
+            ]
+        )
+
+        input_text = "\n".join( message["content"] for message in messages)
+
+        input_tokens = self.tokenizer.count(input_text) 
+
+        full_response = ""
+
+
+        start = time.perf_counter()
+
+        for token in self.llm.stream_chat(messages):
+
+            full_response += token
+
+            yield token
+
+        generation_time = time.perf_counter() - start
+
+        output_tokens = self.tokenizer.count(full_response)
+
+        input_characters = len(input_text)
+
+        output_characters = len(full_response)
+
+        message_count = len(messages) -1
+
+        metrics = GenerationMetrics(
+            model=self.llm.model, 
+            provider = self.llm.provider, 
+            message_count = message_count,
+            input_characters = input_characters, 
+            output_characters = output_characters, 
+            input_tokens = input_tokens, 
+            output_tokens = output_tokens, 
+            generation_time = generation_time,
+            tokens_per_second = 0,
+            timestamp = datetime.now()
+        )
+        
+        print(metrics)
+
+        self.conversationService.add_assistant_message(
+            conversation,
+            full_response
+        )
+
+
+    def stream_response_without_metrics  (self, conversation_id, message):
+
+        conversation = self.conversationService.get(conversation_id)
+
+        self.conversationService.add_user_message(message = message, conversation = conversation)
+
+        messages = [
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT
+            }
+        ]
+
+
+        messages.extend(
+            [
+                {
+                    "role": m.role,
+                    "content": m.content
+                }
+                for m in conversation.messages
+            ]
+        )
 
         full_response = ""
 

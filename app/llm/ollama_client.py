@@ -40,3 +40,11 @@ class OllamaClient(LLMClient):
             yield token
 
         return full_response
+    
+    @property
+    def model(self):
+        return MODEL
+
+    @property
+    def provider(self):
+        return OLLAMA_URL
