@@ -2,13 +2,12 @@ from app.rag.chunkers.chunker import Chunker
 from app.rag.models.chunk import Chunk
 
 
+
 class FixedChunker(Chunker):
 
-    def __init__(
-        self,
-        chunk_size=500
-    ):
+    def __init__( self, chunk_size, embedding) :
         self.chunk_size = chunk_size
+        self.embedding = embedding
 
     def split (self, document):
         res = []
@@ -16,9 +15,8 @@ class FixedChunker(Chunker):
             content = document.content[i:i+ self.chunk_size]
             chunk = Chunk(
                 document_id=document.id,
-                owner_id=document.owner_id,
-                index=i,
-                content=content
+                content=content, 
+                embedding= self.embedding.embed(content)
             )
             res .append(chunk)
         return res 
