@@ -1,6 +1,6 @@
 from app.rag.loaders.document_loader import DocumentLoaders
 from app.rag.models.document import Document
-from pathlib import path 
+from pathlib import Path 
 
 class TextLoader(DocumentLoaders) : 
 
@@ -12,6 +12,19 @@ class TextLoader(DocumentLoaders) :
         title = Path(path).stem
         document = document = Document(
             owner_id="all",
+            title= title,
+            content= content
+        )
+        return document
+    
+
+    def load_with_owner(self, path:str, owner_id) : 
+        with open(path, encoding="utf8") as file:
+            content = file.read()
+
+        title = Path(path).stem
+        document = document = Document(
+            owner_id=owner_id,
             title= title,
             content= content
         )
