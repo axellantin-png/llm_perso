@@ -1,3 +1,9 @@
+# Environnement virtuel
 .venv/
-__pycache__/
+
+# Cache Python et fichiers compilés (à la racine ET dans les sous-dossiers)
+**/__pycache__/
+*.pyc
+
+# Fichiers système
 .DS_Store
