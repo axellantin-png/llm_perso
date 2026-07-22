@@ -33,12 +33,3 @@ class OllamaEmbedding(Embedding):
             print(f"Erreur lors de la requête Ollama : {e}")
             return []
 
-
-
-embedding = OllamaEmbedding()
-
-vector = embedding.embed(
-    "Bonjour"
-)
-
-print(len(vector))

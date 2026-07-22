@@ -9,12 +9,8 @@ class Chunk:
         default_factory=lambda: str(uuid4())
     )
 
-    document_id: str = ""
-
-    owner_id: str = ""
-
-    index: int = 0
-
     content: str = ""
 
     embedding: list[float] | None = None
+
+    document_id: str | None = None
