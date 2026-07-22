@@ -1,3 +1,6 @@
+####################################################################################################################################
+# imports
+####################################################################################################################################
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -5,9 +8,24 @@ from pydantic import BaseModel
 from app.services.chat_service import ChatService
 from app.repositories.memory_repository import MemoryRepository
 from app.repositories.sqlite_repository import SQLiteRepository
-from app.llm.client import OllamaClient
-from app.memory.database import Database
+from app.llm.ollama_client import OllamaClient
+from app.database.database import Database
+from app.services.conversation_service import ConversationService
+from app.api.schemas import ConversationResponse
+from app.tokenizers.simple_tokenizer import SimpleTokenizer
 
+####################################################################################################################################
+# pseudo classes 
+####################################################################################################################################
+
+class RenameConversationRequest(BaseModel):
+
+    title: str
+
+
+####################################################################################################################################
+# Code
+####################################################################################################################################
 
 database = Database()
 
@@ -15,13 +33,21 @@ database.initialize()
 
 router = APIRouter()
 
+tokenizer = SimpleTokenizer()
+
 
 # repository = MemoryRepository()
 repository = SQLiteRepository(database)
 
+conversation_service = ConversationService(
+    repository
+)
+
 service = ChatService(
     OllamaClient(),
-    repository
+    repository,
+    conversation_service,
+    tokenizer
 )
 
 
@@ -33,7 +59,8 @@ class ChatRequest(BaseModel):
 @router.post("/conversation")
 def create_conversation():
 
-    conversation = repository.create()
+    conversation = conversation_service.create()
+
 
     return {
         "id": conversation.id
@@ -55,3 +82,49 @@ def chat(
         media_type="text/plain"
     )
 
+@router.get("/conversations")
+def get_conversations():
+
+    return conversation_service.list_conversations()
+
+@router.patch("/conversation/{conversation_id}")
+def rename_conversation(
+    conversation_id: str,
+    request: RenameConversationRequest
+):
+
+    conversation = conversation_service.rename(
+        conversation_id,
+        request.title
+    )
+
+    return {
+        "id": conversation.id,
+        "title": conversation.title
+    }
+
+
+@router.get(
+    "/conversation/{conversation_id}",
+    response_model=ConversationResponse
+)
+def get_conversation(
+    conversation_id: str
+):
+
+    return conversation_service.get(
+        conversation_id
+    )
+
+@router.delete("/conversation/{conversation_id}")
+def delete_conversation(
+    conversation_id: str
+):
+
+    conversation_service.delete(
+        conversation_id
+    )
+
+    return {
+        "status":"deleted"
+    }

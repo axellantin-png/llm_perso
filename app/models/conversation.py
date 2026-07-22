@@ -7,7 +7,6 @@ from app.models.message import Message
 @dataclass
 class Conversation:
 
-
     id: str = field(
         default_factory=lambda: str(uuid4())
     )
@@ -48,3 +47,5 @@ class Conversation:
             )
         )
 
+    def rename(self, title) : 
+        self.title = title

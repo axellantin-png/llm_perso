@@ -28,3 +28,12 @@ class ConversationRepository(ABC):
     @abstractmethod
     def save(self, conversation):
         pass
+
+    @abstractmethod
+    def list(self):
+        pass
+
+
+    @abstractmethod
+    def rename(self, conversation_id, title):
+        pass

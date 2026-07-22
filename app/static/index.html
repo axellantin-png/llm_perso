@@ -1,97 +1,79 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Mon LLM local</title>
-    <style>
-        body {
-            font-family: Arial;
-            max-width: 800px;
-            margin: auto;
-        }
 
-        textarea {
-            width: 100%;
-            height: 80px;
-        }
+<title>
+Assistant local
+</title>
 
-        #answer {
-            white-space: pre-wrap;
-            margin-top: 20px;
-        }
-    </style>
+<link rel="stylesheet" href="/static/style.css">
+
 </head>
+
 
 <body>
 
-<h1>Mon LLM local</h1>
 
-<textarea id="message"
-placeholder="Pose ta question..."></textarea>
+<div class="container">
 
-<button onclick="send()">
+
+<aside>
+
+<h2>
+Conversations
+</h2>
+
+
+<button id="newConversation">
+créer une nouvelle conversation
+</button>
+
+
+<div id="conversationList">
+
+</div>
+
+
+</aside>
+
+
+
+<main>
+
+
+<div id="chat">
+
+</div>
+
+
+
+<div class="input-area">
+
+
+<input 
+id="messageInput"
+placeholder="Votre message..."
+>
+
+
+
+<button id="sendButton">
 Envoyer
 </button>
 
-<div id="answer"></div>
+
+</div>
 
 
-<script>
-// On place la variable à l'extérieur des fonctions pour qu'elle persiste entre les messages
-let conversationID = null;
+</main>
 
-async function createConversation(){
-    let response = await fetch("/conversation", {
-        method: "POST"
-    });
-    let data = await response.json();
-    return data.id; // On retourne l'ID généré par le serveur
-}
 
-async function send(){
-    let message = document.getElementById("message").value;
-    if (!message.trim()) return; // Évite d'envoyer un message vide
+</div>
 
-    let answer = document.getElementById("answer");
-    answer.innerText = "";
 
-    // Si c'est le premier message, on crée la conversation d'abord
-    if (conversationID === null) {
-        try {
-            conversationID = await createConversation();
-        } catch (error) {
-            answer.innerText = "Erreur lors de la création de la conversation.";
-            return;
-        }
-    }
-
-    // Utilisation stricte des backticks (`) pour interpoler l'ID dans l'URL
-    let response = await fetch(`/chat/${conversationID}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            message: message
-        })
-    });
-
-    if (!response.ok) {
-        answer.innerText = "Erreur serveur lors de l'envoi du message.";
-        return;
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-
-    while(true){
-        const {done, value} = await reader.read();
-        if(done) break;
-        
-        answer.innerText += decoder.decode(value);
-    }
-}
-
-</script>
+<script src="/static/app.js"></script>
 
 </body>
+
 </html>

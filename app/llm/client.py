@@ -1,42 +1,17 @@
-import json
-import requests
+from abc import ABC, abstractmethod
 
-from app.config import MODEL, OLLAMA_URL
 
-from app.llm.llm import LLMClient
+class LLMClient(ABC):
 
-class OllamaClient(LLMClient):
-
+    @abstractmethod
     def stream_chat(self, messages):
+        pass
 
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": MODEL,
-                "messages": messages,
-                "stream": True
-            },
-            stream=True
-        )
+    @property
+    def model(self):
+        pass
 
-        response.raise_for_status()
+    @property
+    def provider(self):
+        pass
 
-        full_response = ""
-
-        for line in response.iter_lines():
-
-            if not line:
-                continue
-
-            data = json.loads(line)
-
-            if "message" not in data:
-                continue
-
-            token = data["message"]["content"]
-
-            full_response += token
-
-            yield token
-
-        return full_response

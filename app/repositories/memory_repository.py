@@ -52,3 +52,11 @@ class MemoryRepository(ConversationRepository):
 
     def save(self, conversation) : 
         print(conversation)
+
+
+    def list(self):
+        pass
+
+
+    def rename(self, conversation_id, title):
+        pass
