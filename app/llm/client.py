@@ -3,11 +3,11 @@ import requests
 
 from app.config import MODEL, OLLAMA_URL
 
-from app.interfaces.llm import LLMClient
+from app.llm.llm import LLMClient
 
 class OllamaClient(LLMClient):
 
-    def stream_chat(messages):
+    def stream_chat(self, messages):
 
         response = requests.post(
             OLLAMA_URL,
