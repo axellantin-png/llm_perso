@@ -1,18 +1,17 @@
 ####################################################################################################################################
 # imports
 ####################################################################################################################################
-from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from app.services.chat_service import ChatService
-from app.repositories.memory_repository import MemoryRepository
-from app.repositories.sqlite_repository import SQLiteRepository
-from app.llm.ollama_client import OllamaClient
-from app.database.database import Database
-from app.services.conversation_service import ConversationService
+from app.core.container import router
+from app.core.container import chat_service
+from app.core.container import conversation_service
+from app.core.container import database
+
 from app.api.schemas import ConversationResponse
-from app.tokenizers.simple_tokenizer import SimpleTokenizer
+
+
 
 ####################################################################################################################################
 # pseudo classes 
@@ -27,33 +26,8 @@ class RenameConversationRequest(BaseModel):
 # Code
 ####################################################################################################################################
 
-database = Database()
-
-database.initialize()
-
-router = APIRouter()
-
-tokenizer = SimpleTokenizer()
-
-
-# repository = MemoryRepository()
-repository = SQLiteRepository(database)
-
-conversation_service = ConversationService(
-    repository
-)
-
-service = ChatService(
-    OllamaClient(),
-    repository,
-    conversation_service,
-    tokenizer
-)
-
-
 class ChatRequest(BaseModel):
     message: str
-
 
 
 @router.post("/conversation")
@@ -75,7 +49,7 @@ def chat(
 ):
 
     return StreamingResponse(
-        service.stream_response(
+        chat_service.stream_response(
             conversation_id,
             request.message
         ),
@@ -128,3 +102,5 @@ def delete_conversation(
     return {
         "status":"deleted"
     }
+
+

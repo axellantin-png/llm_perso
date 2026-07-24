@@ -34,24 +34,188 @@ Les principaux objectifs sont :
 Le projet est organisé selon une architecture modulaire :
 
 ```text
-llm_perso/
-│
-├── app/
-│   ├── api/
-│   ├── core/
-│   ├── models/
-│   ├── services/
-│   ├── utils/
-│   └── main.py
-│
-├── data/
-│   ├── documents/
-│   └── chroma/
-│
-├── tests/
-│
+.
+├── app
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── __init__.cpython-313.pyc
+│   │   ├── config.cpython-312.pyc
+│   │   ├── main.cpython-312.pyc
+│   │   └── memory.cpython-312.pyc
+│   ├── api
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312 2.pyc
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── frontend.cpython-312 2.pyc
+│   │   │   ├── frontend.cpython-312.pyc
+│   │   │   ├── routes.cpython-312 2.pyc
+│   │   │   ├── routes.cpython-312.pyc
+│   │   │   └── schemas.cpython-312.pyc
+│   │   ├── frontend.py
+│   │   ├── routes.py
+│   │   └── schemas.py
+│   ├── config.py
+│   ├── database
+│   │   ├── __init__ 2.py
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   └── database.cpython-312.pyc
+│   │   ├── database.py
+│   │   ├── schema 2.sql
+│   │   ├── schema.sql
+│   │   ├── sqlite 2.py
+│   │   └── sqlite.py
+│   ├── llm
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312 2.pyc
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── client.cpython-312 2.pyc
+│   │   │   ├── client.cpython-312.pyc
+│   │   │   ├── llm.cpython-312 2.pyc
+│   │   │   ├── llm.cpython-312.pyc
+│   │   │   ├── ollama_client.cpython-312.pyc
+│   │   │   ├── prompts.cpython-312 2.pyc
+│   │   │   └── prompts.cpython-312.pyc
+│   │   ├── client.py
+│   │   ├── ollama_client.py
+│   │   └── prompts
+│   │       ├── __init__.py
+│   │       ├── __pycache__
+│   │       │   ├── __init__.cpython-312.pyc
+│   │       │   └── system.cpython-312.pyc
+│   │       └── system.py
+│   ├── main.py
+│   ├── models
+│   │   ├── __pycache__
+│   │   │   ├── conversation.cpython-312.pyc
+│   │   │   └── message.cpython-312.pyc
+│   │   ├── __pycache__ 2
+│   │   ├── conversation 2.py
+│   │   ├── conversation.py
+│   │   ├── message 2.py
+│   │   └── message.py
+│   ├── monitoring
+│   │   ├── __pycache__
+│   │   │   └── generation_metrics.cpython-312.pyc
+│   │   └── generation_metrics.py
+│   ├── rag
+│   │   ├── chunkers
+│   │   │   ├── __pycache__
+│   │   │   │   ├── chunker.cpython-311.pyc
+│   │   │   │   └── fixed_chunker.cpython-311.pyc
+│   │   │   ├── __pycache__ 2
+│   │   │   ├── chunker.py
+│   │   │   └── fixed_chunker.py
+│   │   ├── embeddings
+│   │   │   ├── __pycache__
+│   │   │   │   ├── embedding.cpython-312.pyc
+│   │   │   │   ├── embedding.cpython-313.pyc
+│   │   │   │   ├── ollama_embeddings.cpython-312.pyc
+│   │   │   │   └── ollama_embeddings.cpython-313.pyc
+│   │   │   ├── __pycache__ 2
+│   │   │   ├── embedding.py
+│   │   │   └── ollama_embeddings.py
+│   │   ├── loaders
+│   │   │   ├── document_loader.py
+│   │   │   └── text_loader.py
+│   │   ├── models
+│   │   │   ├── __pycache__
+│   │   │   │   ├── chunk.cpython-311.pyc
+│   │   │   │   └── document.cpython-311.pyc
+│   │   │   ├── __pycache__ 2
+│   │   │   ├── chunk.py
+│   │   │   └── document.py
+│   │   ├── retrievers
+│   │   ├── services
+│   │   │   ├── __pycache__
+│   │   │   │   └── document_indexer.cpython-311.pyc
+│   │   │   ├── __pycache__ 2
+│   │   │   ├── document_indexer.py
+│   │   │   └── document_service.py
+│   │   ├── similarity
+│   │   │   ├── __pycache__
+│   │   │   │   ├── cosine_similarity.cpython-311.pyc
+│   │   │   │   └── similarity.cpython-311.pyc
+│   │   │   ├── __pycache__ 2
+│   │   │   ├── cosine_similarity.py
+│   │   │   └── similarity.py
+│   │   └── vectorstores
+│   │       ├── __pycache__
+│   │       │   ├── memory_vector_store.cpython-311.pyc
+│   │       │   └── vector_store.cpython-311.pyc
+│   │       ├── __pycache__ 2
+│   │       ├── memory_vector_store.py
+│   │       └── vector_store.py
+│   ├── repositories
+│   │   ├── __init__ 2.py
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── conversation_repository.cpython-312.pyc
+│   │   │   ├── memory_repository.cpython-312.pyc
+│   │   │   └── sqlite_repository.cpython-312.pyc
+│   │   ├── __pycache__ 2
+│   │   ├── conversation_repository 2.py
+│   │   ├── conversation_repository.py
+│   │   ├── memory_repository 2.py
+│   │   ├── memory_repository.py
+│   │   ├── sqlite_repository 2.py
+│   │   └── sqlite_repository.py
+│   ├── services
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312 2.pyc
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   ├── chat_service.cpython-312 2.pyc
+│   │   │   ├── chat_service.cpython-312.pyc
+│   │   │   ├── conversation_service.cpython-312 2.pyc
+│   │   │   └── conversation_service.cpython-312.pyc
+│   │   ├── chat_service.py
+│   │   └── conversation_service.py
+│   ├── static
+│   │   ├── app.js
+│   │   ├── index_original.html
+│   │   ├── index.html
+│   │   └── style.css
+│   └── tokenizers
+│       ├── __pycache__
+│       │   ├── simple_tokenizer.cpython-312.pyc
+│       │   └── tokenizer.cpython-312.pyc
+│       ├── llama_cpp_tokenizer.py
+│       ├── simple_tokenizer.py
+│       ├── tiktoken_tokenizer.py
+│       ├── tokenizer.py
+│       └── transformers_tokenizer.py
+├── ARCHITECTURE.md
+├── CHANGELOG.md
+├── data
+│   ├── assistant 2.db
+│   └── assistant.db
+├── pytest.ini
+├── README.md
 ├── requirements.txt
-└── README.md
+├── ROADMAP.md
+└── tests
+    ├── __pycache__
+    │   ├── test_document_indexer.cpython-311-pytest-8.3.3.pyc
+    │   ├── test_fixed_chunker.cpython-311-pytest-8.3.3.pyc
+    │   └── test_memory_vector_store.cpython-311-pytest-8.3.3.pyc
+    ├── __pycache__ 2
+    ├── fake_class
+    │   ├── __pycache__
+    │   │   ├── fake_embedding.cpython-311.pyc
+    │   │   └── fake_vectore_store.cpython-311.pyc
+    │   ├── fake_embedding.py
+    │   └── fake_vectore_store.py
+    ├── fake_class 2
+    ├── test_document_indexer.py
+    ├── test_fixed_chunker.py
+    └── test_memory_vector_store.py
 ```
 
 Chaque module possède une responsabilité unique afin de faciliter la maintenance et l’évolution du projet.

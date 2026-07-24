@@ -1,8 +1,8 @@
-from app.rag.loaders.document_loader import DocumentLoaders
+from app.rag.loaders.document_loader import DocumentLoader
 from app.rag.models.document import Document
 from pathlib import Path 
 
-class TextLoader(DocumentLoaders) : 
+class TextLoader(DocumentLoader) : 
 
 
     def load(self, path:str) : 
