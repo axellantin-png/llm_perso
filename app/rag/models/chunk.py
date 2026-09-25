@@ -14,3 +14,5 @@ class Chunk:
     embedding: list[float] | None = None
 
     document_id: str | None = None
+
+    document_title: str | None = None

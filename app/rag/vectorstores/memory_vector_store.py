@@ -16,11 +16,27 @@ class MemoryVectorStore(VectorStore):
     def clear(self):
         self.chunks.clear()
 
-    def search (self, embedding, k=5) : 
-        scores = []
-        for chunk in self.chunks : 
-            score = self.similarity.score(embedding, chunk.embedding)
-            scores.append((score, chunk))
+    def search(self, embedding, k=5):
 
-        scores.sort(reverse = True, key = lambda item: item[0])
-        return [chunk for _, chunk in scores[:k]]
+        results = []
+
+        for chunk in self.chunks:
+
+            score = self.similarity.score(
+                embedding,
+                chunk.embedding
+            )
+
+            results.append(
+                SearchResult(
+                    chunk=chunk,
+                    score=score
+                )
+            )
+
+        results.sort(
+            key=lambda result: result.score,
+            reverse=True
+        )
+
+        return results[:k]
