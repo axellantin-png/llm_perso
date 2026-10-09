@@ -2,78 +2,35 @@
 <html>
 
 <head>
-
-<title>
-Assistant local
-</title>
-
-<link rel="stylesheet" href="/static/style.css">
-
+    <title>Assistant local</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 
-
 <body>
+    <div class="container">
+        <aside>
+            <h2>Conversations</h2>
+            <button id="newConversation">créer une nouvelle conversation</button>
+            <div id="conversationList"></div>
+        </aside>
 
+        <main>
+            <div id="chat"></div>
 
-<div class="container">
+            <!-- Nouvelle zone pour l'upload de fichiers au-dessus de la saisie -->
+            <div id="uploadArea" style="padding: 10px; background: #f9f9f9; border-top: 1px solid #ccc; font-size: 0.9em; display: flex; align-items: center; gap: 10px;">
+                <input type="file" id="fileInput" style="display: none;">
+                <button id="uploadButton" style="background-color: #f0f0f0; border: 1px solid #ccc; padding: 5px 10px; cursor: pointer; border-radius: 4px;">📎 Joindre un document</button>
+                <span id="uploadStatus" style="color: #666;">Aucun fichier sélectionné</span>
+            </div>
 
+            <div class="input-area">
+                <input id="messageInput" placeholder="Votre message...">
+                <button id="sendButton">Envoyer</button>
+            </div>
+        </main>
+    </div>
 
-<aside>
-
-<h2>
-Conversations
-</h2>
-
-
-<button id="newConversation">
-créer une nouvelle conversation
-</button>
-
-
-<div id="conversationList">
-
-</div>
-
-
-</aside>
-
-
-
-<main>
-
-
-<div id="chat">
-
-</div>
-
-
-
-<div class="input-area">
-
-
-<input 
-id="messageInput"
-placeholder="Votre message..."
->
-
-
-
-<button id="sendButton">
-Envoyer
-</button>
-
-
-</div>
-
-
-</main>
-
-
-</div>
-
-
-<script src="/static/app.js"></script>
-
+    <script src="/static/app.js"></script>
 </body>
-
 </html>

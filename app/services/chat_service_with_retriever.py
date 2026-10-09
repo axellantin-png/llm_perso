@@ -6,6 +6,13 @@ from datetime import datetime
 
 class ChatServiceWithRetriever:
 
+    def __init__(self, retriever, llm, conversationService, tokenizer, repository=None):
+        self.retriever = retriever
+        self.llm = llm
+        self.conversationService = conversationService
+        self.tokenizer = tokenizer
+        self.repository = repository
+
     def stream_response (self, conversation_id, message):
 
         avec_sources = False

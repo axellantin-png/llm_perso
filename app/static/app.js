@@ -348,3 +348,59 @@ document
 )
 .onclick =
 createConversation;
+
+
+// --- LOGIQUE POUR L'UPLOAD DE FICHIER ---
+const fileInput = document.getElementById("fileInput");
+const uploadButton = document.getElementById("uploadButton");
+const uploadStatus = document.getElementById("uploadStatus");
+
+// Ouvre l'explorateur de fichiers quand on clique sur "Joindre"
+uploadButton.onclick = () => {
+    fileInput.click();
+};
+
+// Se déclenche quand un fichier est sélectionné
+fileInput.onchange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    uploadStatus.textContent = `Upload en cours de ${file.name}...`;
+    uploadButton.disabled = true;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch("/chat/upload-temp-document", {
+            method: "POST",
+            body: formData
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            uploadStatus.textContent = `✅ ${file.name} est prêt !`;
+            
+            // On peut ajouter un petit message visuel dans le chat
+            if (currentConversationId) {
+                addMessage("système", `Le document <b>${file.name}</b> a été analysé. Vous pouvez lui poser des questions !`);
+            }
+        } else {
+            uploadStatus.textContent = `❌ Erreur lors de l'upload.`;
+        }
+    } catch (error) {
+        console.error("Erreur d'upload:", error);
+        uploadStatus.textContent = `❌ Erreur de connexion.`;
+    } finally {
+        uploadButton.disabled = false;
+        // On réinitialise l'input pour pouvoir uploader le même fichier si besoin
+        fileInput.value = ""; 
+        
+        // Efface le status après 5 secondes
+        setTimeout(() => {
+            if (uploadStatus.textContent.includes("✅")) {
+                uploadStatus.textContent = "Aucun fichier sélectionné";
+            }
+        }, 5000);
+    }
+};

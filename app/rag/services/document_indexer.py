@@ -13,12 +13,8 @@ class DocumentIndexer:
         self.embedding = embedding 
         self.vector_store = vector_store
 
-    def index(self, document) : 
+    def index(self, document): 
         chunks = self.chunker.split(document)
-        for chunk in chunks :
-
-            chunk.embedding = self.embedding.embed(
-                chunk.content
-            )
-
-            self.vector_store.add(chunks)
+        for chunk in chunks:
+            chunk.embedding = self.embedding.embed(chunk.content)
+            self.vector_store.add(chunk) # Correction ici (chunk au singulier)

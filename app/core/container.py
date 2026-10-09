@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
 from app.database.database import Database
-from app.rag.vectorstores.memory_vector_store import MemoryVectorStore
+from app.rag.vectorstores.sqlite_vector_store import SQLiteVectorStore
 from app.rag.embeddings.ollama_embeddings import OllamaEmbedding
 from app.rag.chunkers.fixed_chunker import FixedChunker
 from app.rag.services.document_indexer import DocumentIndexer
@@ -11,7 +11,6 @@ from app.rag.services.document_service import DocumentService
 from app.services.chat_service import ChatService
 from app.repositories.sqlite_repository import SQLiteRepository
 from app.llm.ollama_client import OllamaClient
-from app.database.database import Database
 from app.services.conversation_service import ConversationService
 from app.tokenizers.simple_tokenizer import SimpleTokenizer
 from app.rag.similarity.cosine_similarity import CosineSimilarity
@@ -27,11 +26,12 @@ repository = SQLiteRepository(database)
 
 llm = OllamaClient()
 
-vector_store = MemoryVectorStore(similarity=CosineSimilarity())
+# Changement majeur : on utilise maintenant la persistance !
+vector_store = SQLiteVectorStore(database=database, similarity=CosineSimilarity())
 
 embedding = OllamaEmbedding()
 
-chunker = FixedChunker(chunk_size=5, embedding= embedding)
+chunker = FixedChunker(chunk_size=500, embedding=embedding)  # J'ai mis 500 pour que le RAG ait du sens (5 c'était très petit !)
 
 tokenizer = SimpleTokenizer()
 
@@ -50,11 +50,11 @@ conversation_service = ConversationService(
 # Création du retriever vectoriel
 retriever = VectorRetriever(vector_store=vector_store, embedding=embedding)
 
-# chat-service avec RAG
+# chat-service avec RAG (injection corrigée avec conversationService au lieu de conversation_service)
 chat_service_with_retriever = ChatServiceWithRetriever(
     llm=llm,
     repository=repository,
-    conversation_service=conversation_service,
+    conversationService=conversation_service,
     tokenizer=tokenizer,
     retriever=retriever
 )
