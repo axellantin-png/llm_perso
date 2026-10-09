@@ -8,18 +8,28 @@ class ChatServiceWithRetriever:
 
     def stream_response (self, conversation_id, message):
 
+        avec_sources = False
+
         conversation = self.conversationService.get(conversation_id)
 
         self.conversationService.add_user_message(message = message, conversation = conversation)
 
-        results = self.retriever.retrieve(
-                    message
-                )
+        # 1. Récupération des résultats via le retriever
+        results = self.retriever.retrieve(message)
         
-        context = "\n\n".join(
-            result.chunk.content
-            for result in results
-        )
+        # 2. Construction du contexte et collecte des sources
+        context_parts = []
+        sources = set()
+
+        for result in results:
+            context_parts.append(result.chunk.content)
+            # Supposons que le chunk ou le document possède un identifiant ou un nom de source
+            # Par exemple : result.chunk.document_id ou une métadonnée
+            source_name = getattr(result.chunk, "document_id", "Document inconnu")
+            sources.add(source_name)
+
+        context = "\n\n".join(context_parts)
+        
 
         messages = [
             {
@@ -67,36 +77,73 @@ class ChatServiceWithRetriever:
 
         generation_time = time.perf_counter() - start
 
-        output_tokens = self.tokenizer.count(full_response)
+        if (not(avec_sources)) : 
+            output_tokens = self.tokenizer.count(full_response)
+            input_characters = len(input_text)
+    
+            output_characters = len(full_response)
+    
+            message_count = len(messages) -1
+    
+            metrics = GenerationMetrics(
+                model=self.llm.model, 
+                provider = self.llm.provider, 
+                message_count = message_count,
+                input_characters = input_characters, 
+                output_characters = output_characters, 
+                input_tokens = input_tokens, 
+                output_tokens = output_tokens, 
+                generation_time = generation_time,
+                tokens_per_second = 0,
+                timestamp = datetime.now()
+            )
+            
+            print(metrics)
+    
+            self.conversationService.add_assistant_message(
+                conversation,
+                full_response
+            )
+        else : 
 
-        input_characters = len(input_text)
+            # Formatage des sources à ajouter à la fin de la réponse assistant
+            sources_text = "\n\n**Sources :**\n" + "\n".join(f"- {src}" for src in sources)
+            
+            # Si vous souhaitez l'injecter dans le message sauvegardé en base :
+            full_response_with_sources = full_response + sources_text
 
-        output_characters = len(full_response)
+            output_tokens = self.tokenizer.count(full_response_with_sources)
 
-        message_count = len(messages) -1
+            input_characters = len(input_text)
 
-        metrics = GenerationMetrics(
-            model=self.llm.model, 
-            provider = self.llm.provider, 
-            message_count = message_count,
-            input_characters = input_characters, 
-            output_characters = output_characters, 
-            input_tokens = input_tokens, 
-            output_tokens = output_tokens, 
-            generation_time = generation_time,
-            tokens_per_second = 0,
-            timestamp = datetime.now()
-        )
-        
-        print(metrics)
+            output_characters = len(full_response_with_sources)
 
-        self.conversationService.add_assistant_message(
-            conversation,
-            full_response
-        )
+            message_count = len(messages) -1
+
+            metrics = GenerationMetrics(
+                model=self.llm.model, 
+                provider = self.llm.provider, 
+                message_count = message_count,
+                input_characters = input_characters, 
+                output_characters = output_characters, 
+                input_tokens = input_tokens, 
+                output_tokens = output_tokens, 
+                generation_time = generation_time,
+                tokens_per_second = 0,
+                timestamp = datetime.now()
+            )
+            
+            print(metrics)
+
+            self.conversationService.add_assistant_message(
+                conversation,
+                full_response_with_sources
+            )
 
 
     def stream_response_without_metrics  (self, conversation_id, message):
+
+        avec_sources = False 
 
         conversation = self.conversationService.get(conversation_id)
 
@@ -109,14 +156,21 @@ class ChatServiceWithRetriever:
             }
         ]
 
-        results = self.retriever.retrieve(
-                            message
-                        )
-                
-        context = "\n\n".join(
-            result.chunk.content
-            for result in results
-        )
+        # 1. Récupération des résultats via le retriever
+        results = self.retriever.retrieve(message)
+        
+        # 2. Construction du contexte et collecte des sources
+        context_parts = []
+        sources = set()
+
+        for result in results:
+            context_parts.append(result.chunk.content)
+            # Supposons que le chunk ou le document possède un identifiant ou un nom de source
+            # Par exemple : result.chunk.document_id ou une métadonnée
+            source_name = getattr(result.chunk, "document_id", "Document inconnu")
+            sources.add(source_name)
+
+        context = "\n\n".join(context_parts)
 
         if context:
         
@@ -147,10 +201,22 @@ class ChatServiceWithRetriever:
 
             yield token
 
-        self.conversationService.add_assistant_message(
-            conversation,
-            full_response
-        )
+        if (not(avec_sources)) : 
+            self.conversationService.add_assistant_message(
+                conversation,
+                full_response
+            )
+        else :
+            # Formatage des sources à ajouter à la fin de la réponse assistant
+            sources_text = "\n\n**Sources :**\n" + "\n".join(f"- {src}" for src in sources)
+            
+            # Si vous souhaitez l'injecter dans le message sauvegardé en base :
+            full_response_with_sources = full_response + sources_text
+
+            self.conversationService.add_assistant_message(
+                            conversation,
+                            full_response_with_sources
+                        )
         
     
         

@@ -1,5 +1,5 @@
 from app.rag.vectorstores.vector_store import VectorStore
-
+from app.rag.models.search_results import SearchResult 
 class MemoryVectorStore(VectorStore):
 
     def __init__(

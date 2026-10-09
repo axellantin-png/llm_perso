@@ -3,6 +3,7 @@ from app.rag.similarity.cosine_similarity import CosineSimilarity
 from app.rag.models.chunk import Chunk
 
 
+
 def testSearch() : 
 
     store = MemoryVectorStore(

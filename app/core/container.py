@@ -15,6 +15,8 @@ from app.database.database import Database
 from app.services.conversation_service import ConversationService
 from app.tokenizers.simple_tokenizer import SimpleTokenizer
 from app.rag.similarity.cosine_similarity import CosineSimilarity
+from app.rag.retrievers.vector_retriever import VectorRetriever
+from app.services.chat_service_with_retriever import ChatServiceWithRetriever
 
 router = APIRouter()
 
@@ -45,6 +47,19 @@ conversation_service = ConversationService(
     repository
 )
 
+# Création du retriever vectoriel
+retriever = VectorRetriever(vector_store=vector_store, embedding=embedding)
+
+# chat-service avec RAG
+chat_service_with_retriever = ChatServiceWithRetriever(
+    llm=llm,
+    repository=repository,
+    conversation_service=conversation_service,
+    tokenizer=tokenizer,
+    retriever=retriever
+)
+
+# chat-service sans le RAG
 chat_service = ChatService(
     OllamaClient(),
     repository,
