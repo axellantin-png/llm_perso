@@ -10,6 +10,12 @@ class Database:
 
         self.database = "data/assistant.db"
 
+    def __init__(self, db_path: str = "data/assistant.db"):
+
+        Path("data").mkdir(exist_ok=True, parents=True)
+
+        self.database = db_path
+
 
     def get_connection(self):
 
