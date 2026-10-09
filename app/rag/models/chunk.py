@@ -16,3 +16,8 @@ class Chunk:
     document_id: str | None = None
 
     document_title: str | None = None
+
+    # Nouveaux champs optionnels pour le pattern Parent-Child
+    parent_id: str | None = None
+
+    parent_content: str | None = None

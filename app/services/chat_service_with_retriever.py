@@ -22,11 +22,12 @@ class ChatServiceWithRetriever:
         sources = set()
 
         for result in results:
-            context_parts.append(result.chunk.content)
-            # Supposons que le chunk ou le document possède un identifiant ou un nom de source
-            # Par exemple : result.chunk.document_id ou une métadonnée
+            # Si le chunk a un parent, on privilégie le parent pour donner plus de confort au LLM
+            text_to_use = result.chunk.parent_content if result.chunk.parent_content else result.chunk.content
+            context_parts.append(text_to_use)
             source_name = getattr(result.chunk, "document_id", "Document inconnu")
             sources.add(source_name)
+
 
         context = "\n\n".join(context_parts)
         
@@ -164,9 +165,9 @@ class ChatServiceWithRetriever:
         sources = set()
 
         for result in results:
-            context_parts.append(result.chunk.content)
-            # Supposons que le chunk ou le document possède un identifiant ou un nom de source
-            # Par exemple : result.chunk.document_id ou une métadonnée
+            # Si le chunk a un parent, on privilégie le parent pour donner plus de confort au LLM
+            text_to_use = result.chunk.parent_content if result.chunk.parent_content else result.chunk.content
+            context_parts.append(text_to_use)
             source_name = getattr(result.chunk, "document_id", "Document inconnu")
             sources.add(source_name)
 
