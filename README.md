@@ -1,393 +1,153 @@
-# LLM_Perso
+# LLM_Local — Laboratoire d’expérimentation LLM & RAG
 
 ## Présentation
 
-**LLM_Perso** est un projet personnel de création d’un assistant conversationnel privé basé sur un Large Language Model (LLM) exécuté localement.
+**LLM_Local** est un projet personnel d’expérimentation dont l’objectif est d’apprendre par la pratique en implémentant, étape par étape, les méthodes et les briques logicielles qui constituent les assistants IA modernes.
 
-Ce projet a avant tout une visée d’apprentissage : il me permet de comprendre concrètement comment fonctionnent les différents éléments d’une architecture RAG (Retrieval-Augmented Generation), de l’ingestion de documents jusqu’à la génération de réponses contextualisées.
+Plutôt que de s’appuyer sur des frameworks de haut niveau qui masquent une partie de la complexité, le projet vise à comprendre **comment ces systèmes fonctionnent à l'interierieur**.
 
-Il me sert également de support pratique pour me familiariser avec **Git** et adopter de bonnes habitudes de versionnement tout au long du développement.
+## Chronologie du projet
 
-L’objectif est de disposer d’une API capable de :
+Le développement suit une progression itérative, au rythme des apprentissages et des expérimentations.
 
-- importer des documents ;
-- les découper en segments (*chunks*) ;
-- générer leurs embeddings ;
-- les indexer dans une base vectorielle ;
-- retrouver les passages les plus pertinents lors d’une question ;
-- générer une réponse contextualisée grâce à un LLM local.
+### Phase 1 — Fondations et API
 
-## Objectifs du projet
+- **Découverte du backend :** première expérience de création d’une API, avec l’apprentissage de l’architecture backend, du traitement des requêtes et de la structuration des endpoints avec FastAPI et `routes.py`.
+- **Mécanique des LLM :** reproduction de composants présents dans les assistants conversationnels, notamment la gestion de l’historique, le streaming des tokens et la construction d’une interface de chat.
+- **Prompts système et Ollama :** découverte de l’inférence locale avec Ollama et expérimentation avec les instructions système pour guider le comportement du modèle.
+- **Tokenisation :** approfondissement et mise en pratique des connaissances sur la tokenisation des textes.
 
-Les principaux objectifs sont :
+### Phase 2 — Moteur RAG « from scratch »
 
-- comprendre le rôle et le fonctionnement des différentes briques d’une architecture RAG ;
-- développer un assistant IA fonctionnant entièrement en local ;
-- garantir la confidentialité des données ;
-- apprendre à concevoir une API REST avec FastAPI ;
-- utiliser des modèles d’embeddings pour la recherche sémantique ;
-- construire une base de code modulaire et facilement extensible ;
-- se familiariser avec Git et les bonnes pratiques de gestion de versions.
+- **Implémentation du RAG :** construction manuelle des différentes étapes du processus, sans LangChain ni LlamaIndex, afin d’en comprendre les mécanismes.
+- **Vectorisation et chunking :** création de stratégies de découpage avec `FixedChunker` et `HierarchicalChunker`, selon une architecture parent-enfant.
+- **Mesure de similarité :** implémentation de méthodes de recherche vectorielle par similarité cosinus, produit scalaire et approche hybride.
+- **Persistance :** utilisation de SQLite comme base de données relationnelle et vectorielle pour stocker les embeddings et l’historique des conversations.
 
 ## Architecture
 
-Le projet est organisé selon une architecture modulaire :
+Le projet suit une architecture modulaire qui sépare les responsabilités entre l’API, les services, le moteur RAG, les loaders et la base de données.
 
 ```text
 .
 ├── app
-│   ├── __init__.py
-│   ├── __pycache__
-│   │   ├── __init__.cpython-311.pyc
-│   │   ├── __init__.cpython-312.pyc
-│   │   ├── __init__.cpython-313.pyc
-│   │   ├── config.cpython-312.pyc
-│   │   ├── main.cpython-312.pyc
-│   │   └── memory.cpython-312.pyc
-│   ├── api
-│   │   ├── __init__.py
-│   │   ├── __pycache__
-│   │   │   ├── __init__.cpython-312 2.pyc
-│   │   │   ├── __init__.cpython-312.pyc
-│   │   │   ├── frontend.cpython-312 2.pyc
-│   │   │   ├── frontend.cpython-312.pyc
-│   │   │   ├── routes.cpython-312 2.pyc
-│   │   │   ├── routes.cpython-312.pyc
-│   │   │   └── schemas.cpython-312.pyc
-│   │   ├── frontend.py
-│   │   ├── routes.py
-│   │   └── schemas.py
-│   ├── config.py
-│   ├── database
-│   │   ├── __init__ 2.py
-│   │   ├── __init__.py
-│   │   ├── __pycache__
-│   │   │   ├── __init__.cpython-312.pyc
-│   │   │   └── database.cpython-312.pyc
-│   │   ├── database.py
-│   │   ├── schema 2.sql
-│   │   ├── schema.sql
-│   │   ├── sqlite 2.py
-│   │   └── sqlite.py
-│   ├── llm
-│   │   ├── __init__.py
-│   │   ├── __pycache__
-│   │   │   ├── __init__.cpython-312 2.pyc
-│   │   │   ├── __init__.cpython-312.pyc
-│   │   │   ├── client.cpython-312 2.pyc
-│   │   │   ├── client.cpython-312.pyc
-│   │   │   ├── llm.cpython-312 2.pyc
-│   │   │   ├── llm.cpython-312.pyc
-│   │   │   ├── ollama_client.cpython-312.pyc
-│   │   │   ├── prompts.cpython-312 2.pyc
-│   │   │   └── prompts.cpython-312.pyc
-│   │   ├── client.py
-│   │   ├── ollama_client.py
-│   │   └── prompts
-│   │       ├── __init__.py
-│   │       ├── __pycache__
-│   │       │   ├── __init__.cpython-312.pyc
-│   │       │   └── system.cpython-312.pyc
-│   │       └── system.py
-│   ├── main.py
-│   ├── models
-│   │   ├── __pycache__
-│   │   │   ├── conversation.cpython-312.pyc
-│   │   │   └── message.cpython-312.pyc
-│   │   ├── __pycache__ 2
-│   │   ├── conversation 2.py
-│   │   ├── conversation.py
-│   │   ├── message 2.py
-│   │   └── message.py
-│   ├── monitoring
-│   │   ├── __pycache__
-│   │   │   └── generation_metrics.cpython-312.pyc
-│   │   └── generation_metrics.py
-│   ├── rag
-│   │   ├── chunkers
-│   │   │   ├── __pycache__
-│   │   │   │   ├── chunker.cpython-311.pyc
-│   │   │   │   └── fixed_chunker.cpython-311.pyc
-│   │   │   ├── __pycache__ 2
-│   │   │   ├── chunker.py
-│   │   │   └── fixed_chunker.py
-│   │   ├── embeddings
-│   │   │   ├── __pycache__
-│   │   │   │   ├── embedding.cpython-312.pyc
-│   │   │   │   ├── embedding.cpython-313.pyc
-│   │   │   │   ├── ollama_embeddings.cpython-312.pyc
-│   │   │   │   └── ollama_embeddings.cpython-313.pyc
-│   │   │   ├── __pycache__ 2
-│   │   │   ├── embedding.py
-│   │   │   └── ollama_embeddings.py
-│   │   ├── loaders
-│   │   │   ├── document_loader.py
-│   │   │   └── text_loader.py
-│   │   ├── models
-│   │   │   ├── __pycache__
-│   │   │   │   ├── chunk.cpython-311.pyc
-│   │   │   │   └── document.cpython-311.pyc
-│   │   │   ├── __pycache__ 2
-│   │   │   ├── chunk.py
-│   │   │   └── document.py
-│   │   ├── retrievers
-│   │   ├── services
-│   │   │   ├── __pycache__
-│   │   │   │   └── document_indexer.cpython-311.pyc
-│   │   │   ├── __pycache__ 2
-│   │   │   ├── document_indexer.py
-│   │   │   └── document_service.py
-│   │   ├── similarity
-│   │   │   ├── __pycache__
-│   │   │   │   ├── cosine_similarity.cpython-311.pyc
-│   │   │   │   └── similarity.cpython-311.pyc
-│   │   │   ├── __pycache__ 2
-│   │   │   ├── cosine_similarity.py
-│   │   │   └── similarity.py
-│   │   └── vectorstores
-│   │       ├── __pycache__
-│   │       │   ├── memory_vector_store.cpython-311.pyc
-│   │       │   └── vector_store.cpython-311.pyc
-│   │       ├── __pycache__ 2
-│   │       ├── memory_vector_store.py
-│   │       └── vector_store.py
-│   ├── repositories
-│   │   ├── __init__ 2.py
-│   │   ├── __init__.py
-│   │   ├── __pycache__
-│   │   │   ├── __init__.cpython-312.pyc
-│   │   │   ├── conversation_repository.cpython-312.pyc
-│   │   │   ├── memory_repository.cpython-312.pyc
-│   │   │   └── sqlite_repository.cpython-312.pyc
-│   │   ├── __pycache__ 2
-│   │   ├── conversation_repository 2.py
-│   │   ├── conversation_repository.py
-│   │   ├── memory_repository 2.py
-│   │   ├── memory_repository.py
-│   │   ├── sqlite_repository 2.py
-│   │   └── sqlite_repository.py
-│   ├── services
-│   │   ├── __init__.py
-│   │   ├── __pycache__
-│   │   │   ├── __init__.cpython-312 2.pyc
-│   │   │   ├── __init__.cpython-312.pyc
-│   │   │   ├── chat_service.cpython-312 2.pyc
-│   │   │   ├── chat_service.cpython-312.pyc
-│   │   │   ├── conversation_service.cpython-312 2.pyc
-│   │   │   └── conversation_service.cpython-312.pyc
-│   │   ├── chat_service.py
-│   │   └── conversation_service.py
-│   ├── static
-│   │   ├── app.js
-│   │   ├── index_original.html
-│   │   ├── index.html
-│   │   └── style.css
-│   └── tokenizers
-│       ├── __pycache__
-│       │   ├── simple_tokenizer.cpython-312.pyc
-│       │   └── tokenizer.cpython-312.pyc
-│       ├── llama_cpp_tokenizer.py
-│       ├── simple_tokenizer.py
-│       ├── tiktoken_tokenizer.py
-│       ├── tokenizer.py
-│       └── transformers_tokenizer.py
-├── ARCHITECTURE.md
-├── CHANGELOG.md
+│   ├── api
+│   │   ├── routes.py
+│   │   ├── frontend.py
+│   │   └── schemas.py
+│   ├── core
+│   │   └── container.py
+│   ├── database
+│   │   ├── sqlite.py
+│   │   └── schema.sql
+│   ├── llm
+│   │   ├── ollama_client.py
+│   │   └── prompts/
+│   │       └── system.py
+│   ├── models
+│   │   ├── conversation.py
+│   │   └── message.py
+│   ├── rag
+│   │   ├── chunkers
+│   │   │   ├── fixed_chunker.py
+│   │   │   └── hierarchical_chunker.py
+│   │   ├── embeddings
+│   │   │   └── ollama_embeddings.py
+│   │   ├── loaders
+│   │   │   ├── text_loader.py
+│   │   │   ├── pdf_loader.py
+│   │   │   └── markdown_loader.py
+│   │   ├── retrievers
+│   │   │   └── vector_retriever.py
+│   │   ├── services
+│   │   │   └── document_indexer.py
+│   │   ├── similarity
+│   │   │   ├── cosine_similarity.py
+│   │   │   └── hybride_similarity.py
+│   │   └── vectorstores
+│   │       └── sqlite_vector_store.py
+│   ├── repositories
+│   │   └── sqlite_repository.py
+│   ├── services
+│   │   └── chat_service_with_retriever.py
+│   └── static
+│       ├── app.js
+│       ├── index.html
+│       └── style.css
 ├── data
-│   ├── assistant 2.db
-│   └── assistant.db
-├── pytest.ini
-├── README.md
-├── requirements.txt
-├── ROADMAP.md
-└── tests
-    ├── __pycache__
-    │   ├── test_document_indexer.cpython-311-pytest-8.3.3.pyc
-    │   ├── test_fixed_chunker.cpython-311-pytest-8.3.3.pyc
-    │   └── test_memory_vector_store.cpython-311-pytest-8.3.3.pyc
-    ├── __pycache__ 2
-    ├── fake_class
-    │   ├── __pycache__
-    │   │   ├── fake_embedding.cpython-311.pyc
-    │   │   └── fake_vectore_store.cpython-311.pyc
-    │   ├── fake_embedding.py
-    │   └── fake_vectore_store.py
-    ├── fake_class 2
-    ├── test_document_indexer.py
-    ├── test_fixed_chunker.py
-    └── test_memory_vector_store.py
+├── tests
+└── main.py
 ```
-
-Chaque module possède une responsabilité unique afin de faciliter la maintenance et l’évolution du projet.
 
 ## Technologies utilisées
 
-Le projet repose principalement sur les technologies suivantes :
+- **Python 3.11 / 3.12**
+- **FastAPI et Uvicorn** — serveur API
+- **Ollama** — inférence locale et modèles d’embeddings, comme `nomic-embed-text`
+- **SQLite** — stockage relationnel et vectoriel
+- **Pytest** — tests unitaires et d’intégration
+- **HTML, CSS et JavaScript vanilla** — interface interactive avec streaming SSE
 
-- Python 3.12
-- FastAPI
-- Uvicorn
-- Ollama
-- ChromaDB
-- SentenceTransformers
-- Pytest
-- Pydantic
+## Installation et lancement
 
-## Fonctionnement général
+### 1. Cloner le projet et préparer l’environnement
 
-Le fonctionnement du projet se déroule selon les étapes suivantes :
-
-1. Un document est importé.
-2. Le document est chargé en mémoire.
-3. Son contenu est découpé en plusieurs morceaux (*chunks*).
-4. Un embedding est généré pour chaque chunk.
-5. Les embeddings sont enregistrés dans ChromaDB.
-6. L’utilisateur pose une question.
-7. Une recherche vectorielle retrouve les passages les plus pertinents.
-8. Ces passages sont ajoutés au prompt envoyé au LLM.
-9. Le modèle génère une réponse basée sur le contexte retrouvé.
-
-## Installation
-
-### 1. Cloner le projet
+Remplacez l’URL ci-dessous par celle de votre dépôt :
 
 ```bash
-git clone https://github.com/votre-utilisateur/llm_perso.git
-cd llm_perso
-```
+git clone [https://github.com/votre-utilisateur/llm_local.git](https://github.com/votre-utilisateur/llm_local.git)
+cd llm_local
 
-### 2. Créer un environnement virtuel
-
-#### Windows
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-```
-
-#### Linux / macOS
-
-```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Installer les dépendances
+Sous Windows, activez l’environnement avec :
+
+```powershell
+.venv\Scripts\activate
+```
+
+Installez ensuite les dépendances :
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Installer Ollama
+### 2. Configurer Ollama
 
-Télécharger Ollama puis récupérer un modèle compatible.
-
-Exemple :
+Installez [Ollama](https://ollama.com/), puis récupérez les modèles nécessaires :
 
 ```bash
 ollama pull mistral
+ollama pull nomic-embed-text
 ```
 
-ou
+`mistral` est le modèle de langage utilisé par défaut. `nomic-embed-text` sert à générer les embeddings nécessaires au RAG.
 
-```bash
-ollama pull llama3
-```
-
-### 5. Lancer l’API
+### 3. Lancer l’application
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-L’API sera disponible à l’adresse suivante :
+L’interface de chat est accessible à l’adresse [http://localhost:8000/docs/index.html](http://localhost:8000/docs/index.html), selon la configuration de montage des fichiers statiques.
 
-[http://localhost:8000](http://localhost:8000)
+## Fonctionnement de l’application
 
-La documentation interactive sera accessible via :
-
-[http://localhost:8000/docs](http://localhost:8000/docs)
-
-## Ingestion des documents
-
-L’API permet d’importer un document qui sera automatiquement :
-
-- chargé ;
-- découpé ;
-- vectorisé ;
-- indexé dans ChromaDB.
-
-Cette étape prépare les données afin qu’elles puissent être utilisées lors des futures recherches.
-
-## Recherche sémantique
-
-Lorsqu’une question est posée :
-
-- la question est convertie en embedding ;
-- une recherche par similarité est effectuée ;
-- les passages les plus pertinents sont récupérés.
-
-Cette approche permet de retrouver des informations même lorsque les mots utilisés diffèrent de ceux présents dans le document.
-
-## Génération des réponses
-
-Les passages retrouvés sont injectés dans le prompt du modèle.
-
-Le LLM utilise alors :
-
-- la question de l’utilisateur ;
-- le contexte retrouvé ;
-- ses connaissances générales.
-
-La réponse produite est ainsi plus précise et mieux adaptée aux documents indexés.
+- **Chat interactif :** l’utilisateur converse avec un LLM exécuté localement. Les réponses sont diffusées en temps réel.
+- **Ingestion de documents :** un document PDF, Markdown (`.md`) ou texte (`.txt`) peut être ajouté directement depuis l’interface.
+- **Traitement des documents :** le document est lu, découpé en chunks hiérarchiques, vectorisé, puis enregistré de manière persistante dans SQLite.
+- **Génération augmentée :** lors des questions suivantes, le système recherche les passages pertinents dans SQLite et les ajoute au contexte transmis au LLM pour produire une réponse.
 
 ## Tests
 
-Les tests unitaires sont réalisés avec Pytest.
-
-Exécution :
+Les tests automatisés couvrent le moteur RAG et l’API. Pour les lancer :
 
 ```bash
 pytest
 ```
 
-Les tests permettent notamment de vérifier :
+## Prochaines étapes — Phase 3
 
-- le chargement des documents ;
-- le découpage en chunks ;
-- la génération des embeddings ;
-- les services d’ingestion ;
-- le fonctionnement global des composants.
-
-## Évolutions prévues
-
-Les améliorations envisagées sont les suivantes :
-
-- prise en charge des PDF ;
-- prise en charge des fichiers Word ;
-- historique des conversations ;
-- gestion de plusieurs collections ChromaDB ;
-- authentification des utilisateurs ;
-- interface web ;
-- streaming des réponses ;
-- mémoire conversationnelle ;
-- support de plusieurs modèles LLM.
-
-## Bonnes pratiques
-
-Le projet suit plusieurs principes de développement :
-
-- architecture en couches ;
-- séparation des responsabilités ;
-- code typé avec Python ;
-- tests unitaires ;
-- services indépendants ;
-- documentation de l’API avec OpenAPI.
-
-## Auteur
-
-Projet développé dans une démarche d’apprentissage pour mieux comprendre les architectures RAG, le fonctionnement des modèles de langage en local, ainsi que l’utilisation de Git dans un cadre de développement progressif.
-
-## Licence
-
-Ce projet est distribué sous licence MIT. Vous êtes libre de le modifier, de l’utiliser et de le partager conformément aux termes de cette licence.
+La prochaine phase portera sur l’**IA agentique** : permettre au LLM de décider quand utiliser des fonctions externes, comme un calculateur, et d’en exploiter les résultats de façon autonome.
